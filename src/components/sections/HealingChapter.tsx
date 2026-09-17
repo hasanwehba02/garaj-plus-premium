@@ -16,7 +16,7 @@ export default function HealingChapter() {
   }, [healed]);
 
   return (
-    <section data-stage="healing" className="relative flex min-h-[130svh] items-end pt-[42svh] md:items-center md:px-10 md:pt-0">
+    <section data-stage="healing" className="relative flex min-h-[100svh] items-center md:px-10">
       <div className="mx-auto flex w-full max-w-[1440px] justify-end">
         <div className="m-scrim w-full max-w-md px-6 pb-24 pt-20 md:p-0">
           <Reveal className="eyebrow flex items-center gap-4">

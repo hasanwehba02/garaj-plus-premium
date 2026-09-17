@@ -4,7 +4,12 @@ import Reveal from "../ui/Reveal";
 
 export default function Hero() {
   return (
-    <section data-stage="hero" className="relative flex min-h-svh flex-col justify-between px-6 pb-24 pt-32 md:pb-10 md:px-10 md:pt-40">
+    <section data-stage="hero" className="relative flex min-h-svh flex-col justify-between overflow-hidden px-6 pb-24 pt-32 md:pb-10 md:px-10 md:pt-40">
+      <div className="aura" aria-hidden />
+      <div className="film-stage" aria-hidden>
+        <span className="film-card film-card--back" />
+        <span className="film-card" />
+      </div>
       <div className="mx-auto w-full max-w-[1440px]">
         <Reveal className="eyebrow flex items-center gap-4">
           <span className="h-px w-10 bg-gold" />

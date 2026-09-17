@@ -15,7 +15,7 @@ export default function StudioSection() {
   
 
   return (
-    <section id="studio" data-stage="studio" className="relative flex min-h-[140svh] items-end px-4 pb-28 pt-[52svh] md:items-center md:px-10 md:py-28">
+    <section id="studio" data-stage="studio" className="relative flex min-h-[80svh] items-center px-4 py-24 md:px-10 md:py-28">
       <div className="mx-auto w-full max-w-[1440px]">
         <Reveal className="glass w-full max-w-md rounded-3xl p-6 md:p-8">
           <div className="eyebrow flex items-center gap-4">
@@ -26,7 +26,7 @@ export default function StudioSection() {
           <h2 className="mt-5 text-3xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
             Korumanı <em className="font-display font-bold gold-text">tasarla.</em>
           </h2>
-          <p className="mt-3 text-sm text-mist">Araç üzerinde canlı önizleme. Bir renk, bir yüzey ve aracın ne kadarının kaplanacağını seçin.</p>
+          <p className="mt-3 text-sm text-mist">Aracınız için rengi, yüzeyi ve kaplama alanını seçin — seçiminiz teklifinize birebir yansır.</p>
 
           <fieldset className="mt-7">
             <legend className="flex w-full justify-between text-[11px] uppercase tracking-[0.16em] text-mist">
@@ -81,6 +81,14 @@ export default function StudioSection() {
             </div>
           </fieldset>
 
+          <div
+            className="mt-7 h-24 rounded-2xl border hairline transition-all duration-500"
+            style={{
+              background: `linear-gradient(120deg, ${site.paints.find((p) => p.id === paint)?.hex ?? "#34373c"} 0%, rgba(255,255,255,${finish === "satin" ? 0.06 : 0.24}) 45%, ${site.paints.find((p) => p.id === paint)?.hex ?? "#34373c"} 100%)`,
+              filter: finish === "satin" ? "saturate(0.9) brightness(0.95)" : "saturate(1.05)",
+            }}
+            aria-hidden
+          />
           <div className="mt-7 flex items-end justify-between border-t hairline pt-6">
             <div>
               <div className="text-[11px] uppercase tracking-[0.16em] text-mist">Seçiminiz</div>

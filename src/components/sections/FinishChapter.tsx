@@ -6,7 +6,7 @@ export default function FinishChapter() {
   const m = useExperience((s) => Math.round(Math.min(1, Math.max(0, ((s.local.finish ?? 0) - 0.3) / 0.4)) * 60) / 60);
 
   return (
-    <section data-stage="finish" data-local="finish" className="relative h-[230vh]">
+    <section data-stage="finish" data-local="finish" className="relative h-[150vh]">
       <div className="sticky top-0 flex h-svh items-end md:items-center md:px-10">
         <div className="mx-auto w-full max-w-[1440px]">
           <div className="m-scrim max-w-md px-6 pb-24 pt-28 md:p-0">

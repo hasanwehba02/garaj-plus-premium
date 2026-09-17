@@ -12,7 +12,7 @@ export default function FilmChapter() {
   const pct = useExperience((s) => Math.round(Math.min(1, Math.max(0, ((s.local.film ?? 0) - 0.08) / 0.84)) * 100));
 
   return (
-    <section data-stage="film" data-local="film" className="relative h-[320vh]">
+    <section data-stage="film" data-local="film" className="relative h-[190vh]">
       <div className="sticky top-0 flex h-svh items-end md:items-center md:px-10">
         <div className="mx-auto w-full max-w-[1440px]">
           <div className="m-scrim max-w-md px-6 pb-24 pt-28 md:rounded-3xl md:glass md:p-9">
