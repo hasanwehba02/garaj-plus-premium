@@ -14,7 +14,7 @@ import { useExperience, type StageKey } from "@/lib/store";
 type Key = { pos: [number, number, number]; target: [number, number, number]; fov: number; shift: number; mLift: number };
 
 export const KEYS: Record<StageKey, Key> = {
-  hero: { pos: [6.8, 1.45, 7.2], target: [0, 0.95, 0], fov: 30, shift: 1.25, mLift: -0.05 },
+  hero: { pos: [7.0, 1.75, 7.4], target: [0, 0.95, 0], fov: 30, shift: 1.25, mLift: -0.05 },
   film: { pos: [0.3, 1.4, 10], target: [0, 0.95, 0], fov: 30, shift: 1.55, mLift: 0.42 },
   healing: { pos: [4.3, 1.6, 3.4], target: [1.5, 0.95, 0.35], fov: 36, shift: -0.9, mLift: 0.42 },
   finish: { pos: [-6.7, 2.15, 5.7], target: [-0.2, 0.95, 0], fov: 30, shift: 1.3, mLift: 0.42 },

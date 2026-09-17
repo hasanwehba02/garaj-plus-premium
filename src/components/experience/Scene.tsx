@@ -62,7 +62,7 @@ export default function Scene() {
       frameloop={paused ? "never" : "always"}
       dpr={high ? [1, 1.5] : [1, 1.25]}
       style={{ position: "absolute", inset: 0 }}
-      gl={{ antialias: true, powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 0.95 }}
+      gl={{ antialias: true, powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 0.85 }}
       onCreated={({ gl }) => {
         gl.localClippingEnabled = true;
       }}

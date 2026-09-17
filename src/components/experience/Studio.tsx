@@ -56,7 +56,7 @@ export default function Studio({ high }: { high: boolean }) {
 
       {/* Real photo-studio HDRI (Poly Haven, CC0) — this is what makes the
           paint read as real: true soft-box shapes and bounce in reflections. */}
-      <Environment files="/hdri/studio.hdr" resolution={high ? 1024 : 256} environmentIntensity={0.85} />
+      <Environment files="/hdri/studio.hdr" resolution={high ? 512 : 256} environmentIntensity={0.85} />
 
       <ContactShadows position={[0, 0.012, 0]} scale={8} far={1.6} blur={1.7} opacity={0.95} resolution={high ? 1024 : 512} color="#000000" frames={1} />
 
@@ -64,17 +64,17 @@ export default function Studio({ high }: { high: boolean }) {
         <circleGeometry args={[30, 64]} />
         {high ? (
           <MeshReflectorMaterial
-            resolution={1024}
-            blur={[130, 35]}
+            resolution={768}
+            blur={[220, 55]}
             mixBlur={1}
-            mixStrength={4}
-            roughness={0.72}
+            mixStrength={2.6}
+            roughness={0.85}
             depthScale={0.6}
             minDepthThreshold={0.4}
             maxDepthThreshold={1.3}
             color="#0b0b0d"
             metalness={0.6}
-            mirror={0.12}
+            mirror={0}
           />
         ) : (
           <meshStandardMaterial color="#0c0c0e" roughness={0.55} metalness={0.4} />

@@ -67,7 +67,7 @@ export const site = {
   ],
 
   /** Swatches in the 3D studio. `defaultPaint` is what the car wears on load. */
-  defaultPaint: "obsidian",
+  defaultPaint: "graphite",
   paints: [
     { id: "graphite", name: "Likit Grafit", hex: "#34373c" },
     { id: "obsidian", name: "Obsidyen Siyah", hex: "#0a0b0d" },
