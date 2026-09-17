@@ -9,6 +9,7 @@ import * as THREE from "three";
 import { useExperience } from "@/lib/store";
 import Studio from "./Studio";
 import Car from "./Car";
+import LayerStack from "./Showpiece";
 import CameraRig from "./CameraRig";
 
 class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -84,6 +85,7 @@ export default function Scene() {
         <Studio high={high} />
         <SceneBoundary>
           <Car />
+          <LayerStack />
         </SceneBoundary>
         <Ready />
       </Suspense>

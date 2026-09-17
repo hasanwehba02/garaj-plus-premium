@@ -15,7 +15,7 @@ type Key = { pos: [number, number, number]; target: [number, number, number]; fo
 
 export const KEYS: Record<StageKey, Key> = {
   hero: { pos: [7.0, 1.75, 7.4], target: [0, 0.95, 0], fov: 30, shift: 1.25, mLift: -0.05 },
-  film: { pos: [0.3, 1.4, 10], target: [0, 0.95, 0], fov: 30, shift: 1.55, mLift: 0.42 },
+  film: { pos: [3.4, 2.0, 5.0], target: [0, 1.0, 0], fov: 32, shift: 1.45, mLift: 0.4 },
   healing: { pos: [4.3, 1.6, 3.4], target: [1.5, 0.95, 0.35], fov: 36, shift: -0.9, mLift: 0.42 },
   finish: { pos: [-6.7, 2.15, 5.7], target: [-0.2, 0.95, 0], fov: 30, shift: 1.3, mLift: 0.42 },
   studio: { pos: [7.7, 3.4, 7.9], target: [0, 0.9, 0], fov: 28, shift: 1.25, mLift: 0.5 },

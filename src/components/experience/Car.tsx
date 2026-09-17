@@ -463,6 +463,10 @@ export default function Car() {
     (built.barCore.material as THREE.MeshBasicMaterial).opacity = L.glow * side;
     (built.barGlow.material as THREE.MeshBasicMaterial).opacity = L.glow * side * 0.35;
 
+    // the layer stack owns the wrap chapter — the car steps aside for it
+    const filmShare = (s.from === "film" ? 1 - e : 0) + (s.to === "film" ? e : 0);
+    spin.current.visible = filmShare < 0.5;
+
     // slow turntable in the studio; ease home elsewhere
     const share = (s.from === "studio" ? 1 - e : 0) + (s.to === "studio" ? e : 0);
     const g = spin.current;
