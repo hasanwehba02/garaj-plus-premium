@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { site } from "@/lib/site-config";
 import Counter from "../ui/Counter";
 import Reveal from "../ui/Reveal";
@@ -5,12 +6,20 @@ import Reveal from "../ui/Reveal";
 export default function Hero() {
   return (
     <section data-stage="hero" className="relative flex min-h-svh flex-col justify-between overflow-hidden px-6 pb-24 pt-32 md:pb-10 md:px-10 md:pt-40">
-      <div className="aura" aria-hidden />
-      <div className="film-stage" aria-hidden>
-        <span className="film-card film-card--back" />
-        <span className="film-card" />
+      {/* a real car from the studio — their own work carries the hero */}
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-full md:w-[64%]" aria-hidden>
+        <Image
+          src={site.gallery[0].src}
+          alt=""
+          fill
+          priority
+          sizes="(max-width: 768px) 100vw, 64vw"
+          className="object-cover object-[60%_38%]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink from-15% via-ink/80 via-55% to-ink/20" />
+        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-ink to-transparent" />
       </div>
-      <div className="mx-auto w-full max-w-[1440px]">
+      <div className="relative z-10 mx-auto w-full max-w-[1440px]">
         <Reveal className="eyebrow flex items-center gap-4">
           <span className="h-px w-10 bg-gold" />
           Araç koruma & uygulama merkezi{site.contact.city && ` · ${site.contact.city}`}
@@ -31,7 +40,7 @@ export default function Hero() {
         </Reveal>
       </div>
 
-      <div className="mx-auto mt-16 w-full max-w-[1440px]">
+      <div className="relative z-10 mx-auto mt-16 w-full max-w-[1440px]">
         <div className="grid grid-cols-2 gap-y-6 border-t hairline pt-6 md:grid-cols-4">
           {site.stats.map((s, i) => (
             <Reveal key={s.label} delay={500 + i * 90} className="pr-4">

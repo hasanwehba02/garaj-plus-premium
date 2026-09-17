@@ -5,6 +5,7 @@ import HealingChapter from "@/components/sections/HealingChapter";
 import FinishChapter from "@/components/sections/FinishChapter";
 import StudioSection from "@/components/sections/StudioSection";
 import SpecBand from "@/components/sections/SpecBand";
+import Work from "@/components/sections/Work";
 import Services from "@/components/sections/Services";
 import Packages from "@/components/sections/Packages";
 import Compare from "@/components/sections/Compare";
@@ -29,6 +30,7 @@ export default function Page() {
       <StudioSection />
       <div className="veil">
         <SpecBand />
+        <Work />
         <Services />
         <Packages />
         <Compare />

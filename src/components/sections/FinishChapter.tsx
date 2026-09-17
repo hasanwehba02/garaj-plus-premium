@@ -6,8 +6,8 @@ export default function FinishChapter() {
   const m = useExperience((s) => Math.round(Math.min(1, Math.max(0, ((s.local.finish ?? 0) - 0.3) / 0.4)) * 60) / 60);
 
   return (
-    <section data-stage="finish" data-local="finish" className="relative h-[150vh]">
-      <div className="sticky top-0 flex h-svh items-center px-6 md:px-10">
+    <section data-stage="finish" data-local="finish" className="relative h-auto lg:h-[150vh]">
+      <div className="flex items-center px-6 py-24 md:px-10 lg:sticky lg:top-0 lg:h-svh lg:py-0">
         <div className="mx-auto grid w-full max-w-[1440px] items-center gap-12 lg:grid-cols-2 lg:gap-20">
           <div className="max-w-md">
             <div className="eyebrow flex items-center gap-4">

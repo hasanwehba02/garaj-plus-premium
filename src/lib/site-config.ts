@@ -42,6 +42,7 @@ export const site = {
 
   nav: [
     { label: "Stüdyo", href: "#studio" },
+    { label: "İşlerimiz", href: "#work" },
     { label: "Hizmetler", href: "#services" },
     { label: "Filmler", href: "#packages" },
     { label: "Süreç", href: "#process" },
@@ -53,6 +54,13 @@ export const site = {
     { value: 210, prefix: "", suffix: "", label: "Micron TPU film" },
     { value: 7, prefix: "", suffix: " yıl", label: "Solma & sararma garantisi" },
     { value: 4, prefix: "", suffix: "", label: "Uzmanlık alanı" },
+  ],
+
+  /** Real photos from the studio's own Instagram (@garajpluspremium). */
+  gallery: [
+    { src: "/photos/audi-a5.jpg", car: "Audi A5", work: "PPF Kaplama" },
+    { src: "/photos/skoda-kamiq.jpg", car: "Škoda Kamiq", work: "PPF Kaplama" },
+    { src: "/photos/mini-cooper.jpg", car: "Mini Cooper", work: "PPF Kaplama" },
   ],
 
   filmSpecs: [
