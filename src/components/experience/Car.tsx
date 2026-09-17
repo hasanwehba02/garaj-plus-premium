@@ -29,7 +29,7 @@ import { site } from "@/lib/site-config";
 const CAR_MODEL_URL = process.env.NEXT_PUBLIC_CAR_MODEL ?? "/models/car.glb";
 if (typeof window !== "undefined") useGLTF.preload(CAR_MODEL_URL);
 
-const MODEL_FIT = { length: 4.9, yaw: Math.PI / 2, liftY: 0.005 };
+const MODEL_FIT = { length: 4.7, yaw: Math.PI / 2, liftY: 0.005 };
 const HALF = MODEL_FIT.length / 2 + 0.25;
 
 /** Exact body-paint material names for the current model (checked first,
@@ -462,10 +462,6 @@ export default function Car() {
     built.bar.visible = L.glow * side > 0.01;
     (built.barCore.material as THREE.MeshBasicMaterial).opacity = L.glow * side;
     (built.barGlow.material as THREE.MeshBasicMaterial).opacity = L.glow * side * 0.35;
-
-    // the layer stack owns the wrap chapter — the car steps aside for it
-    const filmShare = (s.from === "film" ? 1 - e : 0) + (s.to === "film" ? e : 0);
-    spin.current.visible = filmShare < 0.5;
 
     // slow turntable in the studio; ease home elsewhere
     const share = (s.from === "studio" ? 1 - e : 0) + (s.to === "studio" ? e : 0);

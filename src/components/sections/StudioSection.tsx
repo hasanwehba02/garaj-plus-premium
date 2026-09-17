@@ -12,12 +12,11 @@ export default function StudioSection() {
 
   const cov = site.coverage.find((c) => c.id === coverage)!;
   const paintName = site.paints.find((p) => p.id === paint)?.name;
-  const paintHex = site.paints.find((p) => p.id === paint)?.hex ?? "#34373c";
   
 
   return (
-    <section id="studio" data-stage="studio" className="relative flex min-h-[80svh] items-center px-4 py-24 md:px-10 md:py-28">
-      <div className="mx-auto grid w-full max-w-[1440px] items-center gap-12 lg:grid-cols-2 lg:gap-20">
+    <section id="studio" data-stage="studio" className="relative flex min-h-[140svh] items-end px-4 pb-28 pt-[52svh] md:items-center md:px-10 md:py-28">
+      <div className="mx-auto w-full max-w-[1440px]">
         <Reveal className="glass w-full max-w-md rounded-3xl p-6 md:p-8">
           <div className="eyebrow flex items-center gap-4">
             <span className="text-gold">04</span>
@@ -27,7 +26,7 @@ export default function StudioSection() {
           <h2 className="mt-5 text-3xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
             Korumanı <em className="font-display font-bold gold-text">tasarla.</em>
           </h2>
-          <p className="mt-3 text-sm text-mist">Aracınız için rengi, yüzeyi ve kaplama alanını seçin — seçiminiz teklifinize birebir yansır.</p>
+          <p className="mt-3 text-sm text-mist">Araç üzerinde canlı önizleme. Bir renk, bir yüzey ve aracın ne kadarının kaplanacağını seçin.</p>
 
           <fieldset className="mt-7">
             <legend className="flex w-full justify-between text-[11px] uppercase tracking-[0.16em] text-mist">
@@ -92,36 +91,6 @@ export default function StudioSection() {
             </a>
           </div>
         </Reveal>
-
-        {/* live preview of the chosen build */}
-        <div className="relative mx-auto w-full max-w-lg">
-          <div className="relative aspect-[5/4] overflow-hidden rounded-3xl border hairline">
-            <div
-              className="absolute inset-0 transition-all duration-500"
-              style={{
-                background: `linear-gradient(118deg, ${paintHex} 0%, rgba(255,255,255,${finish === "satin" ? 0.07 : 0.26}) 44%, ${paintHex} 100%)`,
-                filter: finish === "satin" ? "saturate(.92) brightness(.96)" : "saturate(1.05)",
-              }}
-            />
-            {/* the film, covering the chosen area */}
-            <div
-              className="absolute inset-y-0 left-0 border-r border-gold/50 bg-white/[0.07] transition-all duration-500"
-              style={{ width: `${cov.extent * 100}%` }}
-            />
-            <div className="absolute left-5 top-5 rounded-full border border-gold/40 bg-ink/50 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-gold">
-              PPF · %{Math.round(cov.extent * 100)}
-            </div>
-            <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-6">
-              <div>
-                <div className="text-sm font-medium">{paintName}</div>
-                <div className="text-sm text-mist">
-                  {finishLabel(finish)} · {cov.name}
-                </div>
-              </div>
-            </div>
-          </div>
-          <p className="mt-4 text-center text-xs text-mist">Seçiminiz teklif mesajınıza otomatik eklenir.</p>
-        </div>
       </div>
     </section>
   );
