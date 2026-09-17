@@ -75,7 +75,7 @@ export default function Scene() {
         // without this the lamps are just flat bright pixels — bloom is what
         // makes a headlight read as lit. ToneMapping must come last.
         <EffectComposer multisampling={4} enableNormalPass={false}>
-          <Bloom mipmapBlur intensity={0.95} luminanceThreshold={0.6} luminanceSmoothing={0.25} radius={0.78} />
+          <Bloom mipmapBlur intensity={0.7} luminanceThreshold={0.9} luminanceSmoothing={0.2} radius={0.7} />
           <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
         </EffectComposer>
       )}

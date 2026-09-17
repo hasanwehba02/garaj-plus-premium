@@ -348,11 +348,11 @@ export default function Car() {
 
     const paintMat = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(site.paints[0].hex),
-      metalness: 0.85,
-      roughness: 0.16,
+      metalness: 0.72,
+      roughness: 0.2,
       clearcoat: 1,
       clearcoatRoughness: 0.035,
-      envMapIntensity: 1.45,
+      envMapIntensity: 0.8,
     });
     paintMat.clearcoatNormalMap = clearcoatNoise();
     paintMat.clearcoatNormalScale = new THREE.Vector2(0.09, 0.09);
@@ -435,11 +435,11 @@ export default function Car() {
     paintColor.set(hex);
     const pm = built.paintMat;
     pm.color.lerp(paintColor, 1 - Math.exp(-dt * 3));
-    pm.metalness = THREE.MathUtils.lerp(0.85, 0.5, L.matte);
-    pm.roughness = THREE.MathUtils.lerp(0.16, 0.6, L.matte);
+    pm.metalness = THREE.MathUtils.lerp(0.72, 0.45, L.matte);
+    pm.roughness = THREE.MathUtils.lerp(0.2, 0.62, L.matte);
     pm.clearcoat = THREE.MathUtils.lerp(1, 0.08, L.matte);
     pm.clearcoatRoughness = THREE.MathUtils.lerp(0.035, 0.55, L.matte);
-    pm.envMapIntensity = THREE.MathUtils.lerp(1.45, 0.95, L.matte);
+    pm.envMapIntensity = THREE.MathUtils.lerp(0.8, 0.62, L.matte);
 
     // film
     const x = THREE.MathUtils.lerp(HALF, -HALF, L.extent); // edge position, nose → tail
