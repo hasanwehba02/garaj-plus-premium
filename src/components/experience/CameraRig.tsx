@@ -14,13 +14,13 @@ import { useExperience, type StageKey } from "@/lib/store";
 type Key = { pos: [number, number, number]; target: [number, number, number]; fov: number; shift: number; mLift: number };
 
 export const KEYS: Record<StageKey, Key> = {
-  hero: { pos: [7.0, 1.75, 7.4], target: [0, 0.95, 0], fov: 30, shift: 1.25, mLift: -0.05 },
+  hero: { pos: [3.1, 1.9, 5.4], target: [0, 1.0, 0], fov: 32, shift: 1.2, mLift: 0.2 },
   film: { pos: [3.4, 2.0, 5.0], target: [0, 1.0, 0], fov: 32, shift: 1.45, mLift: 0.4 },
-  healing: { pos: [4.3, 1.6, 3.4], target: [1.5, 0.95, 0.35], fov: 36, shift: -0.9, mLift: 0.42 },
-  finish: { pos: [-6.7, 2.15, 5.7], target: [-0.2, 0.95, 0], fov: 30, shift: 1.3, mLift: 0.42 },
-  studio: { pos: [7.7, 3.4, 7.9], target: [0, 0.9, 0], fov: 28, shift: 1.25, mLift: 0.5 },
-  top: { pos: [0.01, 13, 2.6], target: [0, 0, 0], fov: 30, shift: 0, mLift: 0 },
-  outro: { pos: [-8.4, 1.15, -6.6], target: [0, 1.05, 0], fov: 26, shift: 0, mLift: 0.3 },
+  healing: { pos: [1.4, 1.5, 3.6], target: [0, 1.0, 0], fov: 34, shift: -0.9, mLift: 0.4 },
+  finish: { pos: [-3.3, 1.7, 4.8], target: [0, 1.0, 0], fov: 32, shift: 1.3, mLift: 0.4 },
+  studio: { pos: [2.7, 2.2, 5.2], target: [0, 1.0, 0], fov: 30, shift: 1.25, mLift: 0.45 },
+  top: { pos: [0.01, 6.2, 0.9], target: [0, 0.9, 0], fov: 34, shift: 0, mLift: 0 },
+  outro: { pos: [-3.9, 1.4, -4.2], target: [0, 1.0, 0], fov: 30, shift: 0, mLift: 0.3 },
 };
 
 const INTRO = new THREE.Vector3(12, 4.2, 13);

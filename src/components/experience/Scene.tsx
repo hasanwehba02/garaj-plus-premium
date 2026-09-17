@@ -8,8 +8,7 @@ import { ToneMappingMode } from "postprocessing";
 import * as THREE from "three";
 import { useExperience } from "@/lib/store";
 import Studio from "./Studio";
-import Car from "./Car";
-import LayerStack from "./Showpiece";
+import Showpiece from "./Showpiece";
 import CameraRig from "./CameraRig";
 
 class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -84,8 +83,7 @@ export default function Scene() {
       <Suspense fallback={null}>
         <Studio high={high} />
         <SceneBoundary>
-          <Car />
-          <LayerStack />
+          <Showpiece />
         </SceneBoundary>
         <Ready />
       </Suspense>
