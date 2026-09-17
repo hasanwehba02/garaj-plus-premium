@@ -3,6 +3,8 @@
 import { Component, Suspense, useEffect, type ReactNode } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { PerformanceMonitor, useProgress } from "@react-three/drei";
+import { EffectComposer, Bloom, ToneMapping } from "@react-three/postprocessing";
+import { ToneMappingMode } from "postprocessing";
 import * as THREE from "three";
 import { useExperience } from "@/lib/store";
 import Studio from "./Studio";
@@ -69,6 +71,14 @@ export default function Scene() {
       <PerformanceMonitor onDecline={() => useExperience.getState().setQuality("low")} />
       <ProgressBridge />
       <CameraRig />
+      {high && (
+        // without this the lamps are just flat bright pixels — bloom is what
+        // makes a headlight read as lit. ToneMapping must come last.
+        <EffectComposer multisampling={4} enableNormalPass={false}>
+          <Bloom mipmapBlur intensity={0.95} luminanceThreshold={0.6} luminanceSmoothing={0.25} radius={0.78} />
+          <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
+        </EffectComposer>
+      )}
       <Suspense fallback={null}>
         <Studio high={high} />
         <SceneBoundary>

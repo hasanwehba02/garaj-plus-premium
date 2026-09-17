@@ -100,7 +100,7 @@ function refineNonPaint(m: THREE.MeshStandardMaterial, accent: THREE.Color) {
   const n = m.name.toLowerCase();
   m.envMapIntensity = 0.9;
   if (/glass|window|lens|mirror/.test(n)) {
-    m.color.set("#05070a");
+    m.color.set("#0c1219");
     m.metalness = 0.2;
     m.roughness = 0.05;
     m.envMapIntensity = 1.0;
@@ -108,7 +108,7 @@ function refineNonPaint(m: THREE.MeshStandardMaterial, accent: THREE.Color) {
     // studio reflections don't wash the car out
     if (/window|windscreen|windshield/.test(n)) {
       m.transparent = true;
-      m.opacity = Math.max(m.opacity ?? 1, 0.7);
+      m.opacity = Math.max(m.opacity ?? 1, 0.45);
     }
   } else if (/tire|tyre|gom(?!.*black.?q)/.test(n)) {
     m.color.set("#0c0c0c");
@@ -132,12 +132,12 @@ function refineNonPaint(m: THREE.MeshStandardMaterial, accent: THREE.Color) {
   } else if (/stoplightred|stoplightcover/.test(n)) {
     m.color.set("#b00a06");
     m.emissive.set("#ff1a0c");
-    m.emissiveIntensity = 2.4;
+    m.emissiveIntensity = 3.6;
     m.toneMapped = false;
   } else if (/winker|winkercover/.test(n)) {
     m.color.set("#c86000");
     m.emissive.set("#e06400");
-    m.emissiveIntensity = 1.2;
+    m.emissiveIntensity = 2;
   } else if (/headlight_led|light_led/.test(n)) {
     m.color.set("#f2f6ff");
     m.emissive.set("#dfe9ff");
@@ -162,8 +162,10 @@ function refineNonPaint(m: THREE.MeshStandardMaterial, accent: THREE.Color) {
     m.metalness = 0.8;
     m.roughness = 0.3;
   } else if (/interior|seat|dash|monitor|pedal|gold/.test(n)) {
-    m.color.multiplyScalar(0.5);
-    m.roughness = 0.7;
+    // the cabin was being crushed to black — keep it readable through the glass
+    m.color.multiplyScalar(0.9);
+    m.roughness = 0.55;
+    m.envMapIntensity = 1.2;
   } else {
     m.roughness = Math.min(m.roughness ?? 0.8, 0.5);
   }
