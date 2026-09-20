@@ -19,7 +19,14 @@ export const metadata: Metadata = {
   openGraph: { title: `${site.name} — ${site.tagline}`, description: site.description, type: "website", locale: "tr_TR" },
 };
 
-export const viewport: Viewport = { themeColor: site.theme.bg, colorScheme: "dark" };
+export const viewport: Viewport = {
+  themeColor: site.theme.bg,
+  colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+};
 
 const themeVars = {
   "--bg": site.theme.bg,

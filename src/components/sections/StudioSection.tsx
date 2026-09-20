@@ -166,7 +166,7 @@ export default function StudioSection() {
     <section
       id="studio"
       data-stage="studio"
-      className="relative flex min-h-[140svh] items-end px-4 pb-28 pt-[48svh] md:items-center md:px-10 md:py-28 cursor-grab active:cursor-grabbing"
+      className="relative flex min-h-[135svh] items-end px-3 pb-24 pt-[40svh] md:items-center md:px-10 md:py-28 cursor-grab active:cursor-grabbing"
     >
       <div className="mx-auto w-full max-w-[1440px]">
         <Reveal className="w-full max-w-lg">
@@ -174,10 +174,10 @@ export default function StudioSection() {
             data-lenis-prevent="true"
             onWheel={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
-            className="glass w-full rounded-3xl p-5 sm:p-7 shadow-2xl border hairline overflow-hidden z-20 relative"
+            className="glass w-full rounded-3xl p-4 sm:p-7 shadow-2xl border hairline overflow-hidden z-20 relative backdrop-blur-xl"
           >
             {/* Header & Reset */}
-            <div className="flex items-center justify-between pb-3 border-b hairline">
+            <div className="flex items-center justify-between pb-2.5 border-b hairline">
               <div className="eyebrow flex items-center gap-3">
                 <span className="text-gold font-mono font-bold">04</span>
                 <span className="h-px w-8 bg-gold/50" />
@@ -190,7 +190,7 @@ export default function StudioSection() {
                   setFinish("gloss");
                   setStudioCameraAngle("front_three_quarter");
                 }}
-                className="text-xs text-mist hover:text-gold transition-colors flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-white/5"
+                className="text-xs text-mist hover:text-gold transition-colors flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-white/5 touch-manipulation"
                 title="Seçimleri Sıfırla"
               >
                 <Icon name="spark" className="w-3.5 h-3.5" />
@@ -198,7 +198,7 @@ export default function StudioSection() {
               </button>
             </div>
 
-            <h2 className="mt-3.5 text-2xl sm:text-3xl font-bold leading-tight tracking-[-0.02em] text-pearl">
+            <h2 className="mt-3 text-2xl sm:text-3xl font-bold leading-tight tracking-[-0.02em] text-pearl">
               PPF & Jant <em className="font-display font-bold gold-text not-italic">Özelleştirme</em>
             </h2>
             <p className="mt-1 text-xs text-mist leading-relaxed">
@@ -206,13 +206,13 @@ export default function StudioSection() {
             </p>
 
             {/* Tab Selector */}
-            <div className="mt-4 grid grid-cols-3 gap-1 p-1 bg-white/5 rounded-2xl border hairline">
+            <div className="mt-3.5 grid grid-cols-3 gap-1 p-1 bg-white/5 rounded-2xl border hairline">
               <button
                 onClick={() => {
                   setActiveTab("packages");
                   setStudioCameraAngle("front_three_quarter");
                 }}
-                className={`py-2 px-2 rounded-xl text-xs font-semibold transition-all ${
+                className={`py-2 px-2 rounded-xl text-xs font-semibold transition-all touch-manipulation ${
                   activeTab === "packages"
                     ? "bg-gold text-ink shadow-md"
                     : "text-mist hover:text-pearl"
@@ -225,7 +225,7 @@ export default function StudioSection() {
                   setActiveTab("panels");
                   setStudioCameraAngle("front_three_quarter");
                 }}
-                className={`py-2 px-2 rounded-xl text-xs font-semibold transition-all ${
+                className={`py-2 px-2 rounded-xl text-xs font-semibold transition-all touch-manipulation ${
                   activeTab === "panels"
                     ? "bg-gold text-ink shadow-md"
                     : "text-mist hover:text-pearl"
@@ -238,7 +238,7 @@ export default function StudioSection() {
                   setActiveTab("rims");
                   setStudioCameraAngle("side");
                 }}
-                className={`py-2 px-2 rounded-xl text-xs font-semibold transition-all ${
+                className={`py-2 px-2 rounded-xl text-xs font-semibold transition-all touch-manipulation ${
                   activeTab === "rims"
                     ? "bg-gold text-ink shadow-md"
                     : "text-mist hover:text-pearl"
@@ -253,7 +253,7 @@ export default function StudioSection() {
               <div
                 data-lenis-prevent="true"
                 onWheel={(e) => e.stopPropagation()}
-                className="mt-3.5 space-y-2 max-h-[280px] overflow-y-auto pr-1"
+                className="mt-3.5 space-y-2 max-h-[250px] sm:max-h-[280px] overflow-y-auto pr-1 touch-scroll"
               >
                 {PACKAGES.map((pkg) => {
                   const isSelected = activePackageId === pkg.id;
@@ -354,7 +354,7 @@ export default function StudioSection() {
                 </div>
 
                 {/* Category Pills */}
-                <div className="flex items-center gap-1 overflow-x-auto pb-1 text-xs">
+                <div className="flex items-center gap-1 overflow-x-auto pb-1 text-xs touch-scroll no-scrollbar">
                   {(
                     [
                       "all",
@@ -375,7 +375,7 @@ export default function StudioSection() {
                         else if (cat === "rear") setStudioCameraAngle("rear");
                         else if (cat === "roof_mirrors") setStudioCameraAngle("roof");
                       }}
-                      className={`px-2.5 py-1 rounded-full text-[10px] whitespace-nowrap transition-colors ${
+                      className={`px-2.5 py-1 rounded-full text-[10px] whitespace-nowrap transition-colors touch-manipulation ${
                         activeCategory === cat
                           ? "bg-gold text-ink font-semibold"
                           : "hairline text-mist hover:text-pearl bg-white/5"
@@ -390,7 +390,7 @@ export default function StudioSection() {
                 <div
                   data-lenis-prevent="true"
                   onWheel={(e) => e.stopPropagation()}
-                  className="space-y-1.5 max-h-[175px] overflow-y-auto pr-1"
+                  className="space-y-1.5 max-h-[160px] sm:max-h-[175px] overflow-y-auto pr-1 touch-scroll"
                 >
                   {filteredPanels.map((panel) => {
                     const isProtected = !!panelProtections[panel.id]?.hasPPF;
@@ -398,7 +398,7 @@ export default function StudioSection() {
                       <div
                         key={panel.id}
                         onClick={() => handlePanelToggle(panel.id)}
-                        className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition-all ${
+                        className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition-all touch-manipulation ${
                           isProtected
                             ? "border-gold/60 bg-gold/10"
                             : "hairline hover:border-pearl/20 bg-white/[0.02]"
@@ -433,7 +433,7 @@ export default function StudioSection() {
               <div
                 data-lenis-prevent="true"
                 onWheel={(e) => e.stopPropagation()}
-                className="mt-3.5 space-y-3 max-h-[280px] overflow-y-auto pr-1"
+                className="mt-3.5 space-y-3 max-h-[250px] sm:max-h-[280px] overflow-y-auto pr-1 touch-scroll"
               >
                 <div className="flex items-center justify-between mb-1">
                   <div>
@@ -446,7 +446,7 @@ export default function StudioSection() {
                   </div>
                   <button
                     onClick={() => setStudioCameraAngle("side")}
-                    className="text-[10px] text-gold hover:underline font-mono"
+                    className="text-[10px] text-gold hover:underline font-mono touch-manipulation"
                   >
                     Janta Odaklan
                   </button>
@@ -462,7 +462,7 @@ export default function StudioSection() {
                           setRimFinishMode(rim.id);
                           setStudioCameraAngle("side");
                         }}
-                        className={`flex items-center gap-2.5 p-3 rounded-2xl border cursor-pointer transition-all ${
+                        className={`flex items-center gap-2.5 p-3 rounded-2xl border cursor-pointer transition-all touch-manipulation ${
                           isSelected
                             ? "border-gold bg-gold/10 ring-1 ring-gold/40 shadow-sm"
                             : "hairline hover:border-pearl/20 bg-white/[0.02]"
@@ -515,7 +515,7 @@ export default function StudioSection() {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-gold w-full py-2.5 px-4 rounded-2xl flex items-center justify-center gap-2 text-xs sm:text-sm font-bold shadow-lg shadow-gold/15 transition-transform active:scale-[0.98]"
+                className="btn-gold w-full py-3 px-4 rounded-2xl flex items-center justify-center gap-2 text-xs sm:text-sm font-bold shadow-lg shadow-gold/15 transition-transform active:scale-[0.98] touch-manipulation"
               >
                 <Icon name="spark" className="w-4 h-4" />
                 <span>Teklif Al & Randevu Oluştur</span>

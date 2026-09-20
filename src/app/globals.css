@@ -157,13 +157,34 @@ details summary::-webkit-details-marker { display: none; }
 @media (pointer: coarse), (max-width: 767px) {
   .grain { display: none; }
   .glass {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: color-mix(in oklab, var(--bg-2) 94%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: color-mix(in oklab, var(--bg-2) 90%, transparent);
   }
   [data-reveal] { filter: none; transition-property: opacity, transform; }
   .vignette { background: radial-gradient(140% 100% at 50% 40%, transparent 60%, rgba(0, 0, 0, 0.55) 100%); }
 }
+
+/* iOS Safari Safe-area & Touch Optimization */
+@supports (-webkit-touch-callout: none) {
+  body {
+    min-height: -webkit-fill-available;
+  }
+}
+
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* text scrim so copy stays readable over the car on narrow screens */
 @media (max-width: 767px) {
   .m-scrim { background: linear-gradient(to top, var(--bg) 0%, color-mix(in oklab, var(--bg) 92%, transparent) 62%, transparent 100%); }

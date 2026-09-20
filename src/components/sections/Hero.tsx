@@ -10,17 +10,17 @@ export default function Hero() {
           <span className="h-px w-10 bg-gold" />
           Araç koruma & uygulama merkezi{site.contact.city && ` · ${site.contact.city}`}
         </Reveal>
-        <Reveal as="h1" delay={120} className="mt-8 max-w-[12ch] text-[clamp(2.6rem,7vw,7rem)] font-semibold leading-[0.98] tracking-[-0.035em]">
+        <Reveal as="h1" delay={120} className="mt-6 max-w-[12ch] text-[clamp(2.3rem,7.5vw,7rem)] font-semibold leading-[0.98] tracking-[-0.035em]">
           Kusursuz boya için <em className="font-display font-bold gold-text">görünmez</em> zırh.
         </Reveal>
-        <Reveal as="p" delay={260} className="mt-8 hidden max-w-md text-base leading-relaxed text-mist sm:block md:text-lg">
+        <Reveal as="p" delay={260} className="mt-5 max-w-md text-sm leading-relaxed text-mist sm:text-base md:text-lg">
           {site.description}
         </Reveal>
-        <Reveal delay={380} className="mt-10 flex flex-wrap gap-3">
-          <a href="#studio" className="btn-gold rounded-full px-7 py-4 text-sm font-medium">
+        <Reveal delay={380} className="mt-8 flex flex-wrap gap-3">
+          <a href="#studio" className="btn-gold rounded-full px-6 py-3.5 text-sm font-medium touch-manipulation sm:px-7 sm:py-4">
             Korumanı tasarla
           </a>
-          <a href="#packages" className="btn-ghost rounded-full px-7 py-4 text-sm">
+          <a href="#packages" className="btn-ghost rounded-full px-6 py-3.5 text-sm touch-manipulation sm:px-7 sm:py-4">
             Paketleri incele
           </a>
         </Reveal>

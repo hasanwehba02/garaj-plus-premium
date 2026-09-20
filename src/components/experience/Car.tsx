@@ -246,9 +246,9 @@ export default function Car() {
 
   useEffect(() => {
     const onPointerDown = (e: PointerEvent) => {
-      if (e.button !== 0) return;
+      if (e.pointerType === "mouse" && e.button !== 0) return;
       const target = e.target as HTMLElement;
-      if (target?.closest("button, input, select, textarea, a, .glass")) return;
+      if (target?.closest("button, input, select, textarea, a, .glass, [data-lenis-prevent]")) return;
 
       const s = useExperience.getState();
       if (s.from !== "studio" && s.to !== "studio") return;

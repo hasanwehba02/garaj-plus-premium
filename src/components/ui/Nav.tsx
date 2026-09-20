@@ -18,11 +18,11 @@ export default function Nav() {
   }, []);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50">
+    <header className="fixed inset-x-0 top-0 z-50 pt-[env(safe-area-inset-top)]">
       <div className={`transition-all duration-700 ease-cine ${scrolled ? "glass border-x-0 border-t-0" : "border-b border-transparent"}`}>
-        <nav className="mx-auto flex h-18 max-w-[1440px] items-center justify-between px-6 md:h-20 md:px-10">
-          <a href="#" aria-label={`${site.name} ana sayfa`} className="h-11 text-sm">
-            <Logo className="h-11" />
+        <nav className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-5 md:h-20 md:px-10">
+          <a href="#" aria-label={`${site.name} ana sayfa`} className="h-10 text-sm md:h-11">
+            <Logo className="h-10 md:h-11" />
           </a>
           <ul className="hidden items-center gap-9 lg:flex">
             {site.nav.map((n) => (
@@ -41,9 +41,9 @@ export default function Nav() {
             <a href="#contact" className="btn-gold hidden rounded-full px-5 py-2.5 text-[13px] font-medium sm:inline-block">
               Randevu al
             </a>
-            <button onClick={() => setOpen((v) => !v)} className="relative h-10 w-10 lg:hidden" aria-label="Menü" aria-expanded={open}>
-              <span className={`absolute left-2 right-2 h-px bg-pearl transition-transform duration-500 ${open ? "top-5 rotate-45" : "top-4"}`} />
-              <span className={`absolute left-2 right-2 h-px bg-pearl transition-transform duration-500 ${open ? "top-5 -rotate-45" : "top-6"}`} />
+            <button onClick={() => setOpen((v) => !v)} className="relative flex h-11 w-11 items-center justify-center rounded-xl lg:hidden touch-manipulation" aria-label="Menü" aria-expanded={open}>
+              <span className={`absolute left-2.5 right-2.5 h-0.5 bg-pearl transition-transform duration-500 ${open ? "top-5 rotate-45" : "top-3.5"}`} />
+              <span className={`absolute left-2.5 right-2.5 h-0.5 bg-pearl transition-transform duration-500 ${open ? "top-5 -rotate-45" : "top-6.5"}`} />
             </button>
           </div>
         </nav>
@@ -52,11 +52,11 @@ export default function Nav() {
         </div>
       </div>
 
-      <div className={`glass fixed inset-x-0 top-[73px] origin-top border-x-0 transition-all duration-500 ease-cine lg:hidden ${open ? "scale-y-100 opacity-100" : "pointer-events-none scale-y-95 opacity-0"}`}>
+      <div className={`glass fixed inset-x-0 top-[calc(4rem+env(safe-area-inset-top))] origin-top border-x-0 pb-[max(2rem,env(safe-area-inset-bottom))] transition-all duration-500 ease-cine lg:hidden ${open ? "scale-y-100 opacity-100" : "pointer-events-none scale-y-95 opacity-0"}`}>
         <ul className="flex flex-col px-6 py-6">
           {site.nav.map((n) => (
             <li key={n.href} className="border-b hairline last:border-0">
-              <a href={n.href} onClick={() => setOpen(false)} className="block py-4 font-display text-2xl">
+              <a href={n.href} onClick={() => setOpen(false)} className="block py-4 font-display text-2xl active:text-gold transition-colors">
                 {n.label}
               </a>
             </li>
