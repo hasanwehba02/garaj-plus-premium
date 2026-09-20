@@ -4,9 +4,9 @@ A state-of-the-art 3D automotive detailing and Paint Protection Film (PPF) web e
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-- **🎮 3D Interactive Studio Customizer**:
+- **3D Interactive Studio Customizer**:
   - **Progressive Laser PPF Wrap**: A golden laser blade sweeps across the vehicle in real-time, utilizing hardware clipping planes (`THREE.Plane`) that dynamically transform with the car's yaw rotation to apply PPF strictly as the laser passes each panel.
   - **Dual TPU Surface Finishes**: Choose between **Parlak TPU (Ultra-Gloss Clearcoat)** and **Saten Mat TPU (Frosted Satin Sheen)** with zero color distortion and 100% solid factory paint retention.
   - **Modular Panel Protection**: Select individual panels (*Kaput, Ön/Arka Tampon, Çamurluklar, Kapılar, Tavan, Aynalar, Bagaj*) or curated packages (*Ön Koruma, Şehir Paketi, Tam Koruma*).
@@ -14,18 +14,18 @@ A state-of-the-art 3D automotive detailing and Paint Protection Film (PPF) web e
   - **Free 360° Mouse Orbit**: Left-click and drag horizontally to spin the car with fluid inertia decay.
   - **Dynamic Camera Viewpoints**: Seamless camera transitions between angles (*Front 3/4, Hood, Side Profile, Rear, Roof*).
 
-- **💬 Real-Time Quote & WhatsApp Integration**:
+- **Real-Time Quote & WhatsApp Integration**:
   - Live price and discount calculation with auto-generated formatted WhatsApp quotation messages.
   - Floating bottom-right quick-action WhatsApp button with smooth hover expansion.
 
-- **⚡ Performance & Visual Excellence**:
+- **Performance & Visual Excellence**:
   - Post-processing pipeline with subtle bloom and filmic tone mapping.
   - Adaptive DPR scaling and low-power detection via `@react-three/drei` performance monitors.
   - Silky-smooth cinematic scrolling with Lenis.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router & Turbopack)
 - **3D & WebGL**: [Three.js](https://threejs.org/), [@react-three/fiber](https://r3f.docs.pmnd.rs/), [@react-three/drei](https://github.com/pmndrs/drei), [@react-three/postprocessing](https://github.com/pmndrs/react-postprocessing)
@@ -35,7 +35,7 @@ A state-of-the-art 3D automotive detailing and Paint Protection Film (PPF) web e
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js 18.18+ or Node.js 20+
@@ -69,7 +69,7 @@ npm start
 
 ---
 
-## 📁 Project Architecture
+## Project Architecture
 
 ```
 garaj-plus-premium/
@@ -93,7 +93,7 @@ garaj-plus-premium/
 
 ---
 
-## ⚙️ White-Labeling & Client Re-Branding (15-min Setup)
+## White-Labeling & Client Re-Branding (15-min Setup)
 
 1. **Brand & Contact Information** (`src/lib/site-config.ts`):
    - Update studio name, phone, WhatsApp number, address, business hours, and social media links.
@@ -107,6 +107,7 @@ garaj-plus-premium/
 
 ---
 
-## 📄 License
+## License
 
 Private & proprietary repository. All rights reserved.
+
