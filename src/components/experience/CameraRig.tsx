@@ -4,13 +4,8 @@ import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useExperience, type StageKey } from "@/lib/store";
+import { useConfiguratorStore } from "@/lib/store/configuratorStore";
 
-/**
- * Camera keyframe per stage. Car sits at the origin, nose → +X, ~4.7m long.
- * `shift` pushes the car sideways on screen (+ = car appears to the right),
- * so copy has room on the other side. Ignored on narrow screens.
- * Tune pacing/composition here.
- */
 type Key = { pos: [number, number, number]; target: [number, number, number]; fov: number; shift: number; mLift: number };
 
 export const KEYS: Record<StageKey, Key> = {
@@ -21,6 +16,15 @@ export const KEYS: Record<StageKey, Key> = {
   studio: { pos: [7.2, 3.1, 7.4], target: [0, 0.5, 0], fov: 28, shift: 1.25, mLift: 0.5 },
   top: { pos: [0.01, 13, 2.6], target: [0, 0, 0], fov: 30, shift: 0, mLift: 0 },
   outro: { pos: [-8, 0.85, -6.2], target: [0, 0.75, 0], fov: 26, shift: 0, mLift: 0.3 },
+};
+
+const STUDIO_KEYS: Record<string, Key> = {
+  front_three_quarter: { pos: [6.4, 2.2, 5.0], target: [0, 0.55, 0], fov: 28, shift: 1.1, mLift: 0.45 },
+  hood: { pos: [6.8, 1.45, 0], target: [0.9, 0.55, 0], fov: 25, shift: 0.85, mLift: 0.35 },
+  side: { pos: [0.2, 1.25, 6.8], target: [0.1, 0.50, 0], fov: 27, shift: 0.85, mLift: 0.35 },
+  rear: { pos: [-6.8, 1.45, 0], target: [-0.9, 0.55, 0], fov: 26, shift: 0.85, mLift: 0.35 },
+  roof: { pos: [0.2, 7.8, 2.2], target: [0, 0.5, 0], fov: 28, shift: 0.7, mLift: 0.3 },
+  wheels: { pos: [0.2, 1.25, 6.8], target: [0.1, 0.50, 0], fov: 27, shift: 0.85, mLift: 0.35 },
 };
 
 const INTRO = new THREE.Vector3(12, 4.2, 13);
@@ -46,8 +50,12 @@ export default function CameraRig() {
     const cam = camera as THREE.PerspectiveCamera;
 
     const e = s.t * s.t * (3 - 2 * s.t);
-    const A = KEYS[s.from];
-    const B = KEYS[s.to];
+    const studioAngle = useConfiguratorStore.getState().studioCameraAngle ?? "front_three_quarter";
+    const studioKey = STUDIO_KEYS[studioAngle] ?? KEYS.studio;
+
+    const A = s.from === "studio" ? studioKey : KEYS[s.from];
+    const B = s.to === "studio" ? studioKey : KEYS[s.to];
+
     a.fromArray(A.pos).lerp(b.fromArray(B.pos), e);
     const tx = THREE.MathUtils.lerp(A.target[0], B.target[0], e);
     const ty = THREE.MathUtils.lerp(A.target[1], B.target[1], e);
@@ -58,7 +66,6 @@ export default function CameraRig() {
     let fov = THREE.MathUtils.lerp(A.fov, B.fov, e);
     const aspect = size.width / Math.max(1, size.height);
     if (aspect < 1.2) {
-      // portrait: widen the vertical fov so the car's length still fits
       const kf = THREE.MathUtils.clamp(0.95 / aspect, 1, 2.2);
       fov = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(fov / 2)) * kf));
     }
@@ -71,7 +78,6 @@ export default function CameraRig() {
     a.x += m.sx * 0.3;
     a.y -= m.sy * 0.18;
 
-    // hold on the intro framing until the loader lifts, then glide in
     const k = s.sceneReady ? 1 - Math.exp(-dt * (s.reducedMotion ? 30 : 4.5)) : 0;
     c.pos.lerp(a, k);
     c.tgt.x += (tx - c.tgt.x) * k;
@@ -86,7 +92,6 @@ export default function CameraRig() {
     right.crossVectors(dir, up).normalize();
     look.copy(c.tgt).addScaledVector(right, -c.shift);
     if (c.lift) {
-      // narrow screens: push the car up so copy can sit underneath it
       camUp.crossVectors(right, dir);
       look.addScaledVector(camUp, -c.lift * c.pos.distanceTo(c.tgt) * Math.tan(THREE.MathUtils.degToRad(c.fov / 2)));
     }
