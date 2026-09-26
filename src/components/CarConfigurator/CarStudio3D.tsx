@@ -145,10 +145,33 @@ export default function CarStudio3D({ className = "" }: CarStudio3DProps) {
 
   // Sync Rim Finish Mode
   useEffect(() => {
-    if (engineRef.current) {
+    if (engineRef.current && !loading) {
       engineRef.current.setRimFinish(rimFinishMode);
     }
-  }, [rimFinishMode]);
+  }, [rimFinishMode, loading]);
+
+  // Sync PPF Finish & Panel Protections
+  useEffect(() => {
+    if (!engineRef.current || loading) return;
+    const activeRegions: string[] = [];
+    const inactiveRegions: string[] = [];
+    for (const [panelId, prot] of Object.entries(panelProtections)) {
+      const part = findStudioPartByPanelId(panelId);
+      if (part && part.kind === "body") {
+        if (prot.hasPPF) {
+          activeRegions.push(part.id);
+        } else {
+          inactiveRegions.push(part.id);
+        }
+      }
+    }
+    if (activeRegions.length > 0) {
+      engineRef.current.applyPPF(activeRegions, globalPPFFinish);
+    }
+    if (inactiveRegions.length > 0) {
+      engineRef.current.removePPF(inactiveRegions);
+    }
+  }, [globalPPFFinish, panelProtections, loading]);
 
   // Current Hovered / Selected Part Meta
   const activeHoverPart = hoveredPartId ? findStudioPartById(hoveredPartId) : null;

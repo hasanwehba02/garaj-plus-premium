@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { loadCarStudioModel, type LoadedStudioModel } from "./studio-loader-glb";
 import type {
   PPFFinish,
@@ -25,7 +26,7 @@ vStudioWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
 
 const SWEEP_FRAG = `
 varying vec3 vStudioWorldPos;
-uniform float uSweepZ;
+uniform float uSweepX;
 uniform float uSweepActive;
 uniform float uHighlight;
 uniform float uTime;
@@ -36,8 +37,8 @@ uniform vec3 uSweepColor;
 const SWEEP_FRAG_MAIN = `
 #include <emissivemap_fragment>
 {
-  // 1. PPF install laser scanline
-  float edge = 1.0 - smoothstep(0.0, 0.35, abs(vStudioWorldPos.z - uSweepZ));
+  // 1. PPF install laser scanline (sweeps across X axis from Front to Rear)
+  float edge = 1.0 - smoothstep(0.0, 0.35, abs(vStudioWorldPos.x - uSweepX));
   totalEmissiveRadiance += uSweepColor * edge * uSweepActive * 2.6;
 
   // 2. Selection / Hover glowing pulse (golden emissive highlight)
@@ -47,8 +48,16 @@ const SWEEP_FRAG_MAIN = `
 `;
 
 const PPF_VALUES = {
-  gloss: { rough: 0.16, clear: 1.0, clearRough: 0.04 },
-  satin: { rough: 0.54, clear: 0.45, clearRough: 0.42 },
+  gloss: { metal: 0.88, rough: 0.10, clear: 1.0, clearRough: 0.02, env: 1.70 },
+  satin: { metal: 0.52, rough: 0.58, clear: 0.15, clearRough: 0.48, env: 0.90 },
+};
+
+const BASE_BODY_VALUES = {
+  metal: 0.82,
+  rough: 0.26,
+  clear: 0.65,
+  clearRough: 0.12,
+  env: 1.15,
 };
 
 const RIM_VALUES: Record<
@@ -76,13 +85,15 @@ export interface StudioPartRuntime {
   targetClearcoat: number;
   paintClearcoatRoughness: number;
   targetClearcoatRoughness: number;
+  paintEnvMapIntensity: number;
+  targetEnvMapIntensity: number;
   isPPF: boolean;
   ppfFinish: PPFFinish;
   highlight: number;
   targetHighlight: number;
   sweepT: number;
   uniforms: {
-    uSweepZ: { value: number };
+    uSweepX: { value: number };
     uSweepActive: { value: number };
     uHighlight: { value: number };
     uTime: { value: number };
@@ -120,8 +131,16 @@ export class StudioEngine {
 
   private hoverId: string | null = null;
   private highlightId: string | null = null;
-  private cameraTarget = new THREE.Vector3(DEFAULT_CAMERA_VIEW.target[0], DEFAULT_CAMERA_VIEW.target[1], DEFAULT_CAMERA_VIEW.target[2]);
-  private cameraPosTarget = new THREE.Vector3(DEFAULT_CAMERA_VIEW.pos[0], DEFAULT_CAMERA_VIEW.pos[1], DEFAULT_CAMERA_VIEW.pos[2]);
+  private cameraTarget = new THREE.Vector3(
+    DEFAULT_CAMERA_VIEW.target[0],
+    DEFAULT_CAMERA_VIEW.target[1],
+    DEFAULT_CAMERA_VIEW.target[2]
+  );
+  private cameraPosTarget = new THREE.Vector3(
+    DEFAULT_CAMERA_VIEW.pos[0],
+    DEFAULT_CAMERA_VIEW.pos[1],
+    DEFAULT_CAMERA_VIEW.pos[2]
+  );
 
   private isDestroyed = false;
 
@@ -150,9 +169,15 @@ export class StudioEngine {
     this.renderer.setSize(container.clientWidth, container.clientHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.toneMappingExposure = 1.08;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    // Studio Environment Reflections (Crucial for Gloss vs Satin rendering)
+    const pmrem = new THREE.PMREMGenerator(this.renderer);
+    pmrem.compileEquirectangularShader();
+    const envTex = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    this.scene.environment = envTex;
 
     // Controls
     this.controls = new OrbitControls(this.camera, this.canvas);
@@ -161,7 +186,7 @@ export class StudioEngine {
     this.controls.target.set(...DEFAULT_CAMERA_VIEW.target);
     this.controls.minDistance = 2.0;
     this.controls.maxDistance = 8.5;
-    this.controls.maxPolarAngle = Math.PI / 2 + 0.02; // prevent going under floor
+    this.controls.maxPolarAngle = Math.PI / 2 + 0.02;
     this.controls.minPolarAngle = 0.2;
 
     this.setupLighting();
@@ -171,12 +196,10 @@ export class StudioEngine {
   }
 
   private setupLighting(): void {
-    // Ambient / Fill
     const amb = new THREE.AmbientLight("#e6edf8", 0.9);
     this.scene.add(amb);
 
-    // Key Light (Gold / Warm Accent)
-    const key = new THREE.DirectionalLight("#fff3db", 2.2);
+    const key = new THREE.DirectionalLight("#fff3db", 2.4);
     key.position.set(4, 6, 4);
     key.castShadow = true;
     key.shadow.mapSize.width = 2048;
@@ -190,12 +213,10 @@ export class StudioEngine {
     key.shadow.bias = -0.0002;
     this.scene.add(key);
 
-    // Fill Cool Light
     const fill = new THREE.DirectionalLight("#a8c8ff", 1.4);
     fill.position.set(-5, 4, -3);
     this.scene.add(fill);
 
-    // Rim overhead soft light
     const top = new THREE.DirectionalLight("#ffffff", 1.8);
     top.position.set(0, 7, 0);
     this.scene.add(top);
@@ -214,7 +235,6 @@ export class StudioEngine {
     ground.receiveShadow = true;
     this.scene.add(ground);
 
-    // Grid Floor Ring
     const ringGeo = new THREE.RingGeometry(2.6, 2.62, 64);
     const ringMat = new THREE.MeshBasicMaterial({
       color: "#c6a858",
@@ -241,28 +261,32 @@ export class StudioEngine {
       loaded.partMeshes.forEach((meshes, partId) => {
         const isRim = partId.startsWith("rim_");
         const defaultColor = new THREE.Color(
-          isRim ? "#121316" : site.paints[0].hex
+          isRim ? "#0a0a0c" : site.paints[0].hex
         );
 
         const uniforms = {
-          uSweepZ: { value: -10.0 },
+          uSweepX: { value: -10.0 },
           uSweepActive: { value: 0.0 },
           uHighlight: { value: 0.0 },
           uTime: { value: 0.0 },
           uSweepColor: { value: new THREE.Color("#d4af37") },
         };
 
+        const initVals = isRim
+          ? { metal: 0.95, rough: 0.12, clear: 1.0, clearRough: 0.04, env: 1.6 }
+          : PPF_VALUES.gloss;
+
         const mat = new THREE.MeshPhysicalMaterial({
           color: defaultColor.clone(),
-          metalness: isRim ? 0.95 : 0.72,
-          roughness: isRim ? 0.15 : 0.2,
-          clearcoat: isRim ? 1.0 : 1.0,
-          clearcoatRoughness: 0.05,
-          envMapIntensity: 1.2,
+          metalness: initVals.metal,
+          roughness: initVals.rough,
+          clearcoat: initVals.clear,
+          clearcoatRoughness: initVals.clearRough,
+          envMapIntensity: initVals.env,
         });
 
         mat.onBeforeCompile = (shader) => {
-          shader.uniforms.uSweepZ = uniforms.uSweepZ;
+          shader.uniforms.uSweepX = uniforms.uSweepX;
           shader.uniforms.uSweepActive = uniforms.uSweepActive;
           shader.uniforms.uHighlight = uniforms.uHighlight;
           shader.uniforms.uTime = uniforms.uTime;
@@ -281,7 +305,6 @@ export class StudioEngine {
           );
         };
 
-        // Assign material to all meshes in this part
         meshes.forEach((mesh) => {
           mesh.material = mat;
         });
@@ -293,15 +316,17 @@ export class StudioEngine {
           material: mat,
           paintColor: defaultColor.clone(),
           targetColor: defaultColor.clone(),
-          paintRoughness: isRim ? 0.15 : 0.2,
-          targetRoughness: isRim ? 0.15 : 0.2,
-          paintMetalness: isRim ? 0.95 : 0.72,
-          targetMetalness: isRim ? 0.95 : 0.72,
-          paintClearcoat: 1.0,
-          targetClearcoat: 1.0,
-          paintClearcoatRoughness: 0.05,
-          targetClearcoatRoughness: 0.05,
-          isPPF: false,
+          paintRoughness: initVals.rough,
+          targetRoughness: initVals.rough,
+          paintMetalness: initVals.metal,
+          targetMetalness: initVals.metal,
+          paintClearcoat: initVals.clear,
+          targetClearcoat: initVals.clear,
+          paintClearcoatRoughness: initVals.clearRough,
+          targetClearcoatRoughness: initVals.clearRough,
+          paintEnvMapIntensity: initVals.env,
+          targetEnvMapIntensity: initVals.env,
+          isPPF: !isRim,
           ppfFinish: "gloss",
           highlight: 0,
           targetHighlight: 0,
@@ -328,15 +353,16 @@ export class StudioEngine {
 
       part.isPPF = true;
       part.ppfFinish = finish;
+      part.targetMetalness = pv.metal;
       part.targetRoughness = pv.rough;
       part.targetClearcoat = pv.clear;
       part.targetClearcoatRoughness = pv.clearRough;
-      part.targetMetalness = finish === "satin" ? 0.45 : 0.72;
+      part.targetEnvMapIntensity = pv.env;
 
       // Start laser scanline animation
       part.sweepT = 0;
       part.uniforms.uSweepActive.value = 1.0;
-      part.uniforms.uSweepZ.value = -3.2;
+      part.uniforms.uSweepX.value = 3.2;
     });
   }
 
@@ -346,15 +372,16 @@ export class StudioEngine {
       if (!part || part.kind !== "body") return;
 
       part.isPPF = false;
-      part.targetRoughness = 0.2;
-      part.targetClearcoat = 1.0;
-      part.targetClearcoatRoughness = 0.05;
-      part.targetMetalness = 0.72;
+      part.targetMetalness = BASE_BODY_VALUES.metal;
+      part.targetRoughness = BASE_BODY_VALUES.rough;
+      part.targetClearcoat = BASE_BODY_VALUES.clear;
+      part.targetClearcoatRoughness = BASE_BODY_VALUES.clearRough;
+      part.targetEnvMapIntensity = BASE_BODY_VALUES.env;
 
       // Quick sweep effect on removal
       part.sweepT = 0;
       part.uniforms.uSweepActive.value = 1.0;
-      part.uniforms.uSweepZ.value = 3.2;
+      part.uniforms.uSweepX.value = -3.2;
     });
   }
 
@@ -368,6 +395,7 @@ export class StudioEngine {
         part.targetMetalness = rv.metal;
         part.targetRoughness = rv.rough;
         part.targetClearcoat = rv.clear;
+        part.targetEnvMapIntensity = 1.6;
       }
     });
   }
@@ -381,6 +409,15 @@ export class StudioEngine {
     });
   }
 
+  public setCameraView(vp: CameraViewpoint): void {
+    this.cameraPosTarget.set(...vp.pos);
+    this.cameraTarget.set(...vp.target);
+    if (vp.fov && Math.abs(this.camera.fov - vp.fov) > 0.5) {
+      this.camera.fov = vp.fov;
+      this.camera.updateProjectionMatrix();
+    }
+  }
+
   public setHighlight(partId: string | null): void {
     this.highlightId = partId;
   }
@@ -389,25 +426,20 @@ export class StudioEngine {
     this.hoverId = partId;
   }
 
-  public setCameraView(viewpoint: CameraViewpoint): void {
-    this.cameraPosTarget.set(...viewpoint.pos);
-    this.cameraTarget.set(...viewpoint.target);
-  }
-
-  // --- Render Loop & Tweening ---
+  // --- Animation Loop ---
 
   private update(dt: number, time: number): void {
-    const lerpSpeed = Math.min(1, dt * 6.5);
+    const lerpSpeed = Math.min(1, dt * 7.5);
 
     // Update parts, uniforms, and materials
     this.parts.forEach((part) => {
       part.uniforms.uTime.value = time;
 
-      // Laser sweep animation
+      // Laser sweep animation (sweeps across X from Front +3.2 to Rear -3.2)
       if (part.sweepT < 1.0) {
         part.sweepT += dt * 1.4;
-        const currentZ = THREE.MathUtils.lerp(-3.2, 3.2, part.sweepT);
-        part.uniforms.uSweepZ.value = currentZ;
+        const currentX = THREE.MathUtils.lerp(3.2, -3.2, part.sweepT);
+        part.uniforms.uSweepX.value = currentX;
         if (part.sweepT >= 1.0) {
           part.uniforms.uSweepActive.value = 0.0;
         }
@@ -434,6 +466,9 @@ export class StudioEngine {
       m.clearcoat += (part.targetClearcoat - m.clearcoat) * lerpSpeed;
       m.clearcoatRoughness +=
         (part.targetClearcoatRoughness - m.clearcoatRoughness) * lerpSpeed;
+      m.envMapIntensity +=
+        (part.targetEnvMapIntensity - m.envMapIntensity) * lerpSpeed;
+      m.needsUpdate = true;
     });
 
     // Smooth Camera Transition
@@ -510,13 +545,13 @@ export class StudioEngine {
     if (!this.isPointerDown) return;
     this.isPointerDown = false;
 
-    // Distinguish drag vs click (< 6px movement)
+    // Distinguish drag vs click (< 8px movement)
     const dist = Math.hypot(
       e.clientX - this.pointerDownPos.x,
       e.clientY - this.pointerDownPos.y
     );
 
-    if (dist < 6 && this.pickables.length > 0) {
+    if (dist < 8 && this.pickables.length > 0) {
       const rect = this.canvas.getBoundingClientRect();
       this.pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       this.pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;

@@ -1,31 +1,81 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { useExperience, type StageKey } from "@/lib/store";
 import { useConfiguratorStore } from "@/lib/store/configuratorStore";
 import { site } from "@/lib/site-config";
+import { findStudioPartById, findStudioPartByPanelId } from "@/lib/car-config/studio-parts";
 
 const CAR_MODEL_URL = process.env.NEXT_PUBLIC_CAR_MODEL ?? "/models/car.glb";
 if (typeof window !== "undefined") useGLTF.preload(CAR_MODEL_URL);
 
-const MODEL_FIT = { length: 4.7, yaw: Math.PI / 2, liftY: 0.005 };
+const MODEL_FIT = { length: 4.7, yaw: -Math.PI / 2, liftY: 0.005 };
 const HALF = MODEL_FIT.length / 2 + 0.25;
 
-const PAINT_MATERIAL_NAMES = ["marina_bay_blue_metallic"];
-const PAINT_MATERIAL = /^(bodymat|body_?paint|carpaint|car_?paint|paint|exterior)(_?(phong|mat|material|lambert|standard|\d+))?$/i;
-const PAINT_HINT = /\b(carpaint|bodypaint|exterior|coachwork|bonnet|hood|fender|roof|door)\b/i;
+const PAINT_MATERIAL_NAMES = ["w206_paint", "w206_color1", "w206_color2", "marina_bay_blue_metallic"];
+const PAINT_MATERIAL = /^(w206_paint|w206_color|bodymat|body_?paint|carpaint|car_?paint|paint|exterior)(_?(phong|mat|material|lambert|standard|\d+))?$/i;
+const PAINT_HINT = /\b(w206_paint|w206_color|carpaint|bodypaint|exterior|coachwork|bonnet|hood|fender|roof|door)\b/i;
 const KEEP_HINT = /glass|window|lens|light|lamp|led|winker|reflect|chrome|mirror|tire|tyre|wheel|rim|hub|brake|rotor|caliper|susp|arm|bolt|exhaust|engine|chassis|mesh|carbon|gom|interior|seat|pedal|monitor|dash|gold|_bk|gloss.?black|stoplight|headlight/i;
+
+// Returns standard panel ID (e.g. "kaput", "on_tampon", "camurluk_on_sol") matching PANELS data
+export function classifyPaintPanelId(cx: number, cy: number, cz: number): string {
+  const absZ = Math.abs(cz);
+
+  // 1. Front Bumper
+  if (cx > 1.95) return "on_tampon";
+
+  // 2. Rear Bumper
+  if (cx < -1.85) return "arka_tampon";
+
+  // 3. Trunk Lid
+  if (cx < -1.25 && cy > 0.72) return "bagaj_kapagi";
+
+  // 4. Side Mirrors
+  if (absZ > 0.82 && cy > 0.75 && cx > 0.40 && cx < 0.95) {
+    return cz < 0 ? "ayna_sol" : "ayna_sag";
+  }
+
+  // 5. Roof & Pillars
+  if (cy > 1.15 && cx > -1.10 && cx < 0.70) {
+    return "tavan";
+  }
+
+  // 6. Hood vs Front Fenders
+  if (cx > 0.85) {
+    if (cy > 0.65 && absZ < 0.68) {
+      return "kaput";
+    }
+    return cz < 0 ? "camurluk_on_sol" : "camurluk_on_sag";
+  }
+
+  // 7. Doors
+  if (cx >= -0.25) {
+    return cz < 0 ? "kapi_on_sol" : "kapi_on_sag";
+  } else {
+    return cz < 0 ? "kapi_arka_sol" : "kapi_arka_sag";
+  }
+}
+
+function isExcludedObject(o: THREE.Object3D): boolean {
+  if (o.name === "Plane" || /floor|ground|asphalt/i.test(o.name)) return true;
+  const mesh = o as THREE.Mesh;
+  if (mesh.isMesh && mesh.material) {
+    const mat = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+    if (mat && /asphalt|floor|ground/i.test(mat.name)) return true;
+  }
+  return false;
+}
 
 function classifyPaint(root: THREE.Object3D) {
   const mats = new Map<string, THREE.Material>();
   const owners = new Map<string, string[]>();
   root.traverse((o) => {
     const mesh = o as THREE.Mesh;
-    if (!mesh.isMesh) return;
+    if (!mesh.isMesh || isExcludedObject(mesh)) return;
     for (const m of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
       if (!m) continue;
       mats.set(m.uuid, m);
@@ -41,32 +91,14 @@ function classifyPaint(root: THREE.Object3D) {
   return paint;
 }
 
-function classifyPaintPanel(meshName: string): string {
-  const s = meshName.toLowerCase();
-  if (s.includes("polysurface219") || s.includes("polysurface287")) return "kaput";
-  if (s.includes("polysurface253") || s.includes("polysurface37")) return "on_tampon";
-  if (s.includes("polysurface41")) return "camurluk_on_sol";
-  if (s.includes("polysurface39")) return "camurluk_on_sag";
-  if (s.includes("polysurface304") || s.includes("polysurface199")) return "kapi_on_sol";
-  if (s.includes("polysurface331") || s.includes("polysurface308")) return "kapi_on_sag";
-  if (s.includes("polysurface66") || s.includes("polysurface65")) return "kapi_arka_sol";
-  if (s.includes("polysurface47")) return "kapi_arka_sag";
-  if (s.includes("polysurface310") || s.includes("polysurface311") || s.includes("polysurface312")) return "tavan";
-  if (s.includes("pcube22") || s.includes("polysurface63")) return "ayna_sol";
-  if (s.includes("pcube192") || s.includes("polysurface305")) return "ayna_sag";
-  if (s.includes("polysurface14") || s.includes("polysurface46")) return "bagaj_kapagi";
-  if (s.includes("polysurface357") || s.includes("polysurface264") || s.includes("polysurface266")) return "arka_tampon";
-  return "kaput";
-}
-
 function refineNonPaint(m: THREE.MeshStandardMaterial, accent: THREE.Color) {
   const n = m.name.toLowerCase();
-  m.envMapIntensity = 0.9;
+  m.envMapIntensity = 1.0;
   if (/glass|window|lens|mirror/.test(n)) {
     m.color.set("#0c1219");
     m.metalness = 0.2;
     m.roughness = 0.05;
-    m.envMapIntensity = 1.0;
+    m.envMapIntensity = 1.2;
     if (/window|windscreen|windshield/.test(n)) {
       m.transparent = true;
       m.opacity = Math.max(m.opacity ?? 1, 0.45);
@@ -90,7 +122,7 @@ function refineNonPaint(m: THREE.MeshStandardMaterial, accent: THREE.Color) {
     m.color.multiplyScalar(0.8);
     m.roughness = 0.42;
     m.metalness = 0.35;
-  } else if (/stoplightred|stoplightcover/.test(n)) {
+  } else if (/stoplightred|stoplightcover|stoplight|taillight/.test(n)) {
     m.color.set("#b00a06");
     m.emissive.set("#ff1a0c");
     m.emissiveIntensity = 3.6;
@@ -99,7 +131,7 @@ function refineNonPaint(m: THREE.MeshStandardMaterial, accent: THREE.Color) {
     m.color.set("#c86000");
     m.emissive.set("#e06400");
     m.emissiveIntensity = 2;
-  } else if (/headlight_led|light_led/.test(n)) {
+  } else if (/headlight_led|light_led|headlight/.test(n)) {
     m.color.set("#f2f6ff");
     m.emissive.set("#dfe9ff");
     m.emissiveIntensity = 7;
@@ -169,7 +201,7 @@ function visibleBox(root: THREE.Object3D, only?: RegExp) {
   const tmp = new THREE.Box3();
   root.traverse((o) => {
     const mesh = o as THREE.Mesh;
-    if (!mesh.isMesh || !mesh.geometry || !mesh.visible) return;
+    if (!mesh.isMesh || !mesh.geometry || !mesh.visible || isExcludedObject(mesh)) return;
     const mat = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) as
       | (THREE.Material & { opacity?: number })
       | undefined;
@@ -236,57 +268,27 @@ function stageTargets(key: StageKey, s: ReturnType<typeof useExperience.getState
 
 export default function Car() {
   const { scene } = useGLTF(CAR_MODEL_URL);
+  const { camera: r3fCamera } = useThree();
   const spin = useRef<THREE.Group>(null!);
   const live = useRef({ extent: 0, matte: 0, glow: 0, lastExtent: 0 });
 
   const isDragging = useRef(false);
+  const pointerDownPos = useRef({ x: 0, y: 0 });
   const lastPointerX = useRef(0);
   const dragVelocity = useRef(0);
   const targetDragYaw = useRef(0);
 
-  useEffect(() => {
-    const onPointerDown = (e: PointerEvent) => {
-      if (e.pointerType === "mouse" && e.button !== 0) return;
-      const target = e.target as HTMLElement;
-      if (target?.closest("button, input, select, textarea, a, .glass, [data-lenis-prevent]")) return;
-
-      const s = useExperience.getState();
-      if (s.from !== "studio" && s.to !== "studio") return;
-
-      isDragging.current = true;
-      lastPointerX.current = e.clientX;
-      dragVelocity.current = 0;
-      useConfiguratorStore.setState({ isAutoSpinning: false });
-    };
-
-    const onPointerMove = (e: PointerEvent) => {
-      if (!isDragging.current) return;
-      const dx = e.clientX - lastPointerX.current;
-      lastPointerX.current = e.clientX;
-      const deltaRad = dx * 0.0075;
-      targetDragYaw.current += deltaRad;
-      dragVelocity.current = deltaRad;
-    };
-
-    const onPointerUp = () => {
-      isDragging.current = false;
-    };
-
-    window.addEventListener("pointerdown", onPointerDown, { passive: true });
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
-    window.addEventListener("pointerup", onPointerUp, { passive: true });
-    window.addEventListener("pointercancel", onPointerUp, { passive: true });
-    return () => {
-      window.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("pointercancel", onPointerUp);
-    };
-  }, []);
-
   const built = useMemo(() => {
     const accent = new THREE.Color(site.theme.accent);
     const root = scene.clone(true);
+
+    // Remove floor planes
+    const toRemove: THREE.Object3D[] = [];
+    root.traverse((o) => {
+      if (isExcludedObject(o)) toRemove.push(o);
+    });
+    toRemove.forEach((o) => o.parent?.remove(o));
+
     root.rotation.set(0, MODEL_FIT.yaw, 0);
     root.updateMatrixWorld(true);
     let box = visibleBox(root);
@@ -305,7 +307,10 @@ export default function Car() {
     const paintIds = classifyPaint(root);
     const refined = new Map<string, THREE.Material>();
     const groups = new Map<THREE.Material, THREE.BufferGeometry[]>();
-    const panelGeos = new Map<string, THREE.BufferGeometry[]>();
+    const panelBuckets = new Map<
+      string,
+      { positions: number[]; normals: number[]; uvs: number[] }
+    >();
     const wheelMaterials: THREE.MeshStandardMaterial[] = [];
 
     const norm = (g: THREE.BufferGeometry, m: THREE.Matrix4) => {
@@ -337,16 +342,36 @@ export default function Car() {
 
     root.traverse((o) => {
       const mesh = o as THREE.Mesh;
-      if (!mesh.isMesh || !mesh.geometry) return;
+      if (!mesh.isMesh || !mesh.geometry || isExcludedObject(mesh)) return;
       mesh.updateWorldMatrix(true, false);
       const src = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
       if (!src) return;
       const g = norm(mesh.geometry, mesh.matrixWorld);
 
       if (paintIds.has(src.uuid)) {
-        const panelId = classifyPaintPanel(mesh.name);
-        if (!panelGeos.has(panelId)) panelGeos.set(panelId, []);
-        panelGeos.get(panelId)!.push(g);
+        const pos = g.attributes.position.array;
+        const normArr = g.attributes.normal?.array;
+        const uvArr = g.attributes.uv?.array;
+
+        for (let i = 0; i < pos.length; i += 9) {
+          const cx = (pos[i] + pos[i + 3] + pos[i + 6]) / 3;
+          const cy = (pos[i + 1] + pos[i + 4] + pos[i + 7]) / 3;
+          const cz = (pos[i + 2] + pos[i + 5] + pos[i + 8]) / 3;
+
+          const panelId = classifyPaintPanelId(cx, cy, cz);
+          let bucket = panelBuckets.get(panelId);
+          if (!bucket) {
+            bucket = { positions: [], normals: [], uvs: [] };
+            panelBuckets.set(panelId, bucket);
+          }
+
+          for (let v = 0; v < 9; v++) bucket.positions.push(pos[i + v]);
+          if (normArr) for (let v = 0; v < 9; v++) bucket.normals.push(normArr[i + v]);
+          if (uvArr) {
+            const uvIdx = (i / 3) * 2;
+            for (let v = 0; v < 6; v++) bucket.uvs.push(uvArr[uvIdx + v] ?? 0);
+          }
+        }
         return;
       }
 
@@ -372,7 +397,6 @@ export default function Car() {
       model.add(mesh);
     }
 
-    // 100% Solid Exterior Body Panels (Base Paint + Synchronized Progressive PPF Meshes)
     const noiseTex = clearcoatNoise();
     const clipPPF = new THREE.Plane(new THREE.Vector3(1, 0, 0), -HALF);
     const clipBase = new THREE.Plane(new THREE.Vector3(-1, 0, 0), HALF);
@@ -387,26 +411,39 @@ export default function Car() {
       maxX: number;
     }[] = [];
 
-    panelGeos.forEach((geos, panelId) => {
-      const merged = geos.length === 1 ? geos[0] : mergeGeometries(geos, false);
-      if (!merged) return;
+    const pickablePanelMeshes: THREE.Mesh[] = [];
 
-      if (!merged.boundingBox) merged.computeBoundingBox();
-      const minX = merged.boundingBox!.min.x;
-      const maxX = merged.boundingBox!.max.x;
+    panelBuckets.forEach((data, panelId) => {
+      if (data.positions.length === 0) return;
+
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.Float32BufferAttribute(data.positions, 3));
+      if (data.normals.length === data.positions.length) {
+        geo.setAttribute("normal", new THREE.Float32BufferAttribute(data.normals, 3));
+      } else {
+        geo.computeVertexNormals();
+      }
+      if (data.uvs.length === (data.positions.length / 3) * 2) {
+        geo.setAttribute("uv", new THREE.Float32BufferAttribute(data.uvs, 2));
+      }
+
+      geo.computeBoundingBox();
+      geo.computeBoundingSphere();
+      const minX = geo.boundingBox!.min.x;
+      const maxX = geo.boundingBox!.max.x;
 
       const baseMat = new THREE.MeshPhysicalMaterial({
         color: new THREE.Color(site.paints[0].hex),
-        metalness: 0.82,
-        roughness: 0.26,
-        clearcoat: 0.65,
-        clearcoatRoughness: 0.12,
+        metalness: 0.80,
+        roughness: 0.28,
+        clearcoat: 0.60,
+        clearcoatRoughness: 0.15,
         envMapIntensity: 1.15,
       });
-      baseMat.clearcoatNormalMap = noiseTex;
-      baseMat.clearcoatNormalScale = new THREE.Vector2(0.09, 0.09);
 
-      const baseMesh = new THREE.Mesh(merged, baseMat);
+      const baseMesh = new THREE.Mesh(geo, baseMat);
+      baseMesh.name = `base_${panelId}`;
+      baseMesh.userData.panelId = panelId;
       baseMesh.castShadow = true;
       baseMesh.matrixAutoUpdate = false;
       model.add(baseMesh);
@@ -414,23 +451,26 @@ export default function Car() {
       const ppfMat = new THREE.MeshPhysicalMaterial({
         color: new THREE.Color(site.paints[0].hex),
         metalness: 0.88,
-        roughness: 0.10,
+        roughness: 0.08,
         clearcoat: 1.0,
         clearcoatRoughness: 0.02,
-        envMapIntensity: 1.70,
+        envMapIntensity: 1.80,
       });
       ppfMat.clearcoatNormalMap = noiseTex;
-      ppfMat.clearcoatNormalScale = new THREE.Vector2(0.09, 0.09);
+      ppfMat.clearcoatNormalScale = new THREE.Vector2(0.08, 0.08);
 
-      const ppfMesh = new THREE.Mesh(merged, ppfMat);
+      const ppfMesh = new THREE.Mesh(geo, ppfMat);
+      ppfMesh.name = `ppf_${panelId}`;
+      ppfMesh.userData.panelId = panelId;
       ppfMesh.castShadow = true;
       ppfMesh.matrixAutoUpdate = false;
       model.add(ppfMesh);
 
       panelMeshes.push({ id: panelId, baseMesh, baseMat, ppfMesh, ppfMat, minX, maxX });
+      pickablePanelMeshes.push(baseMesh, ppfMesh);
     });
 
-    // Golden laser light blade that sweeps across the car during wrap
+    // Golden laser light blade that sweeps across the car from front (+X) to rear (-X)
     const alpha = glowTexture();
     const bodyH = Math.min(fitted.y, 2.3);
     const barGeo = new THREE.BoxGeometry(1, bodyH * 1.3, fitted.z * 1.18);
@@ -448,8 +488,76 @@ export default function Car() {
     bar.position.y = bodyH * 0.55;
     bar.add(barCore, barGlow);
 
-    return { model, panelMeshes, clipPPF, clipBase, bar, barCore, barGlow, wheelMaterials };
+    return { model, panelMeshes, pickablePanelMeshes, clipPPF, clipBase, bar, barCore, barGlow, wheelMaterials };
   }, [scene]);
+
+  // Pointer drag & mouse click raycasting on 3D car in studio mode
+  useEffect(() => {
+    const raycaster = new THREE.Raycaster();
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      const target = e.target as HTMLElement;
+      if (target?.closest("button, input, select, textarea, a, .glass, [data-lenis-prevent]")) return;
+
+      const s = useExperience.getState();
+      if (s.from !== "studio" && s.to !== "studio") return;
+
+      isDragging.current = true;
+      pointerDownPos.current = { x: e.clientX, y: e.clientY };
+      lastPointerX.current = e.clientX;
+      dragVelocity.current = 0;
+      useConfiguratorStore.setState({ isAutoSpinning: false });
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!isDragging.current) return;
+      const dx = e.clientX - lastPointerX.current;
+      lastPointerX.current = e.clientX;
+      const deltaRad = dx * 0.0075;
+      targetDragYaw.current += deltaRad;
+      dragVelocity.current = deltaRad;
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      if (!isDragging.current) return;
+      isDragging.current = false;
+
+      const dist = Math.hypot(e.clientX - pointerDownPos.current.x, e.clientY - pointerDownPos.current.y);
+      if (dist < 8) {
+        // Direct click on car canvas
+        const canvas = window.document.querySelector("canvas");
+        if (canvas && r3fCamera) {
+          const rect = canvas.getBoundingClientRect();
+          const mouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+          const mouseY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+          raycaster.setFromCamera(new THREE.Vector2(mouseX, mouseY), r3fCamera);
+          const visibleMeshes = built.pickablePanelMeshes.filter((m) => m.visible);
+          const hits = raycaster.intersectObjects(visibleMeshes, false);
+          if (hits.length > 0) {
+            const hitPanelId = hits[0].object.userData.panelId as string | undefined;
+            if (hitPanelId) {
+              const cfg = useConfiguratorStore.getState();
+              cfg.togglePanelProtection(hitPanelId);
+              cfg.focusPart(hitPanelId);
+            }
+          }
+        }
+      }
+    };
+
+    window.addEventListener("pointerdown", onPointerDown, { passive: true });
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("pointerup", onPointerUp, { passive: true });
+    window.addEventListener("pointercancel", onPointerUp, { passive: true });
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+    };
+  }, [built.pickablePanelMeshes, r3fCamera]);
 
   const paintColor = useMemo(() => new THREE.Color(), []);
   const rimColor = useMemo(() => new THREE.Color("#0d0e12"), []);
@@ -475,9 +583,10 @@ export default function Car() {
     paintColor.set(hex);
 
     const inStudio = s.from === "studio" || s.to === "studio";
+    // Sweeps across screen from Front (+HALF) to Rear (-HALF)
     const xSweep = THREE.MathUtils.lerp(HALF, -HALF, L.extent);
 
-    // Update clipping planes according to car rotation yaw and laser position
+    // Update clipping planes according to turntable rotation yaw and laser position
     const yaw = spin.current?.rotation.y ?? 0;
     const cosY = Math.cos(yaw);
     const sinY = Math.sin(yaw);
@@ -496,44 +605,44 @@ export default function Car() {
       let isSatin = false;
 
       if (inStudio) {
-        const prot = cfg.panelProtections[id];
+        // Look up by panel ID directly (e.g. "kaput", "on_tampon", "tavan")
+        const prot = cfg.panelProtections[id] ?? cfg.panelProtections[findStudioPartById(id)?.panelId ?? ""];
         isIntended = !!prot?.hasPPF;
         const finish = prot?.finish ?? cfg.globalPPFFinish;
-        isSatin = finish === "satin";
+        isSatin = finish === "satin" || s.finish === "satin";
       } else {
         isIntended = L.extent > 0.02;
-        isSatin = L.matte > 0.3;
+        isSatin = L.matte > 0.3 || s.finish === "satin";
       }
 
       // Configure PPF Material Finish (Gloss TPU vs Satin TPU)
       let targetPPFMetalness = 0.88;
-      let targetPPFRoughness = 0.10;
+      let targetPPFRoughness = 0.06;
       let targetPPFClearcoat = 1.0;
       let targetPPFClearcoatRoughness = 0.02;
-      let targetPPFEnv = 1.70;
+      let targetPPFEnv = 1.85;
 
       if (isSatin) {
-        targetPPFMetalness = 0.52;
-        targetPPFRoughness = 0.58;
-        targetPPFClearcoat = 0.15;
-        targetPPFClearcoatRoughness = 0.48;
-        targetPPFEnv = 0.90;
+        // Frozen Matte / Satin Finish
+        targetPPFMetalness = 0.50;
+        targetPPFRoughness = 0.65;
+        targetPPFClearcoat = 0.05;
+        targetPPFClearcoatRoughness = 0.60;
+        targetPPFEnv = 0.80;
       }
 
-      ppfMat.color.lerp(paintColor, 1 - Math.exp(-dt * 4));
-      ppfMat.metalness = THREE.MathUtils.lerp(ppfMat.metalness, targetPPFMetalness, 1 - Math.exp(-dt * 5));
-      ppfMat.roughness = THREE.MathUtils.lerp(ppfMat.roughness, targetPPFRoughness, 1 - Math.exp(-dt * 5));
-      ppfMat.clearcoat = THREE.MathUtils.lerp(ppfMat.clearcoat, targetPPFClearcoat, 1 - Math.exp(-dt * 5));
-      ppfMat.clearcoatRoughness = THREE.MathUtils.lerp(ppfMat.clearcoatRoughness, targetPPFClearcoatRoughness, 1 - Math.exp(-dt * 5));
-      ppfMat.envMapIntensity = THREE.MathUtils.lerp(ppfMat.envMapIntensity, targetPPFEnv, 1 - Math.exp(-dt * 5));
-      ppfMat.needsUpdate = true;
+      ppfMat.color.lerp(paintColor, 1 - Math.exp(-dt * 6));
+      ppfMat.metalness = THREE.MathUtils.lerp(ppfMat.metalness, targetPPFMetalness, 1 - Math.exp(-dt * 8));
+      ppfMat.roughness = THREE.MathUtils.lerp(ppfMat.roughness, targetPPFRoughness, 1 - Math.exp(-dt * 8));
+      ppfMat.clearcoat = THREE.MathUtils.lerp(ppfMat.clearcoat, targetPPFClearcoat, 1 - Math.exp(-dt * 8));
+      ppfMat.clearcoatRoughness = THREE.MathUtils.lerp(ppfMat.clearcoatRoughness, targetPPFClearcoatRoughness, 1 - Math.exp(-dt * 8));
+      ppfMat.envMapIntensity = THREE.MathUtils.lerp(ppfMat.envMapIntensity, targetPPFEnv, 1 - Math.exp(-dt * 8));
 
-      baseMat.color.lerp(paintColor, 1 - Math.exp(-dt * 4));
-      baseMat.needsUpdate = true;
+      baseMat.color.lerp(paintColor, 1 - Math.exp(-dt * 6));
 
       if (isIntended) {
         if (isMidSweep) {
-          // While sweeping, laser cuts smoothly through the panel geometry
+          // While sweeping, laser cuts smoothly through the panel geometry along X
           if (xSweep > maxX) {
             // Laser hasn't reached this panel yet: 100% factory base
             baseMesh.visible = true;
@@ -551,8 +660,8 @@ export default function Car() {
             ppfMesh.visible = true;
             ppfMat.clippingPlanes = [built.clipPPF];
           }
-        } else if (L.extent >= 0.995) {
-          // Fully wrapped state
+        } else if (L.extent >= 0.995 || inStudio) {
+          // Fully wrapped state in studio
           baseMesh.visible = false;
           ppfMesh.visible = true;
           ppfMat.clippingPlanes = null;
@@ -594,11 +703,10 @@ export default function Car() {
     }
 
     built.wheelMaterials.forEach((wm) => {
-      wm.color.lerp(rimColor, 1 - Math.exp(-dt * 4));
-      wm.metalness = THREE.MathUtils.lerp(wm.metalness, targetMetalness, 1 - Math.exp(-dt * 4));
-      wm.roughness = THREE.MathUtils.lerp(wm.roughness, targetRoughness, 1 - Math.exp(-dt * 4));
+      wm.color.lerp(rimColor, 1 - Math.exp(-dt * 6));
+      wm.metalness = THREE.MathUtils.lerp(wm.metalness, targetMetalness, 1 - Math.exp(-dt * 6));
+      wm.roughness = THREE.MathUtils.lerp(wm.roughness, targetRoughness, 1 - Math.exp(-dt * 6));
       wm.envMapIntensity = 1.6;
-      wm.needsUpdate = true;
     });
 
     // Wrap laser glow animation
@@ -643,5 +751,3 @@ export default function Car() {
     </group>
   );
 }
-
-

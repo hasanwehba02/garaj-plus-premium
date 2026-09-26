@@ -7,20 +7,22 @@ A state-of-the-art 3D automotive detailing and Paint Protection Film (PPF) web e
 ## Key Features
 
 - **3D Interactive Studio Customizer**:
-  - **Progressive Laser PPF Wrap**: A golden laser blade sweeps across the vehicle in real-time, utilizing hardware clipping planes (`THREE.Plane`) that dynamically transform with the car's yaw rotation to apply PPF strictly as the laser passes each panel.
-  - **Dual TPU Surface Finishes**: Choose between **Parlak TPU (Ultra-Gloss Clearcoat)** and **Saten Mat TPU (Frosted Satin Sheen)** with zero color distortion and 100% solid factory paint retention.
+  - **Mercedes-Benz C-Class (W206) High-Fidelity 3D Model**: Accurate vehicle geometry with automated spatial classification of monolithic body paint meshes into 13 discrete detachable panels.
+  - **Interactive 3D Raycasting & Picking**: Click directly on any car panel (*Hood, Bumpers, Doors, Roof, Mirrors, Trunk*) in the 3D viewport or on the rims to toggle protection or inspect details with real-time hover tooltips.
+  - **Progressive Laser PPF Wrap**: A synchronized golden laser blade sweeps across the vehicle in real-time, utilizing hardware clipping planes (`THREE.Plane`) transformed to match the car's orientation, applying film seamlessly as the laser advances.
+  - **Dual TPU Surface Finishes**: Instantaneous switching between **Parlak TPU (Ultra-Gloss Clearcoat)** and **Saten Mat TPU (Frosted Satin Sheen)** with zero color distortion, true micro-roughness control, and factory paint integrity.
   - **Modular Panel Protection**: Select individual panels (*Kaput, Ön/Arka Tampon, Çamurluklar, Kapılar, Tavan, Aynalar, Bagaj*) or curated packages (*Ön Koruma, Şehir Paketi, Tam Koruma*).
   - **Dedicated Rim Customization (Jantlar)**: Live PBR rim finishes (*Parlak Siyah, Füme Krom, Saten Gümüş, Mat Siyah*) with automated camera gliding to the side profile.
-  - **Free 360° Mouse Orbit**: Left-click and drag horizontally to spin the car with fluid inertia decay.
-  - **Dynamic Camera Viewpoints**: Seamless camera transitions between angles (*Front 3/4, Hood, Side Profile, Rear, Roof*).
+  - **Free 360° Mouse Orbit & Inertia**: Drag to inspect the car from any angle with smooth orbital damping and intelligent camera focus angles.
+  - **Dynamic Camera Viewpoints**: Seamless cinematic camera transitions between presets (*Front 3/4, Hood, Side Profile, Rear, Roof, Wheels*).
 
 - **Real-Time Quote & WhatsApp Integration**:
   - Live price and discount calculation with auto-generated formatted WhatsApp quotation messages.
-  - Floating bottom-right quick-action WhatsApp button with smooth hover expansion.
+  - Floating quick-action WhatsApp button with smooth hover expansion.
 
 - **Performance & Visual Excellence**:
-  - Post-processing pipeline with subtle bloom and filmic tone mapping.
-  - Adaptive DPR scaling and low-power detection via `@react-three/drei` performance monitors.
+  - WebGL pipeline with `RoomEnvironment` PMREM generation and subtle post-processing bloom.
+  - Adaptive DPR scaling and frame-rate optimization.
   - Silky-smooth cinematic scrolling with Lenis.
 
 ---
@@ -74,12 +76,13 @@ npm start
 ```
 garaj-plus-premium/
 ├── public/
-│   ├── models/            # 3D GLB vehicle models (car.glb)
+│   ├── models/            # 3D GLB vehicle models (car.glb - Mercedes-Benz W206)
 │   └── images/            # Studio photography and project assets
 ├── src/
 │   ├── app/               # Next.js App Router (layout, pages, globals.css)
 │   ├── components/
-│   │   ├── experience/    # WebGL scene, 3D Car mesh, CameraRig, Studio lighting
+│   │   ├── CarConfigurator/ # Standalone 3D studio, loader, and interactive customizer
+│   │   ├── experience/    # Hero & landing WebGL scene, 3D Car mesh, CameraRig, lighting
 │   │   ├── sections/      # Landing sections (Hero, Film, Healing, StudioSection, Contact)
 │   │   └── ui/            # Nav, Logo, WhatsappButton, Reveal animations
 │   ├── data/
@@ -93,21 +96,20 @@ garaj-plus-premium/
 
 ---
 
-## White-Labeling & Client Re-Branding (15-min Setup)
+## White-Labeling & Client Customization
 
 1. **Brand & Contact Information** (`src/lib/site-config.ts`):
-   - Update studio name, phone, WhatsApp number, address, business hours, and social media links.
+   - Update studio name, phone, WhatsApp number, address, business hours, and social links.
    - Adjust factory paint swatches (`site.paints`) and brand accent colors (`site.theme`).
 2. **Pricing & Packages** (`src/data/panels.ts` & `src/data/packages.ts`):
    - Modify base prices per panel, satin finish surcharges, and package bundle discounts.
 3. **Logo** (`src/components/ui/Logo.tsx`):
    - Swap the SVG logo with the client's vector badge or logotype.
 4. **3D Vehicle Model** (`public/models/car.glb`):
-   - Replace `car.glb` and adjust `MODEL_FIT` in `src/components/experience/Car.tsx` if using a different vehicle chassis.
+   - Replace `car.glb` and adjust `MODEL_FIT` / spatial classification bounds if using a different vehicle chassis.
 
 ---
 
 ## License
 
 Private & proprietary repository. All rights reserved.
-
